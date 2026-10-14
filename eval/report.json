@@ -1,0 +1,244 @@
+{
+  "generated_at": "2026-10-14T13:12:56Z",
+  "mode": "offline",
+  "config": {
+    "min_score": 0.45,
+    "mmr_lambda": 0.7,
+    "lexical_alpha": 0.65,
+    "candidate_pool": 50
+  },
+  "summary": {
+    "total": 13,
+    "passed": 12,
+    "prd_total": 10,
+    "prd_passed": 9,
+    "nonsense_total": 3,
+    "nonsense_passed": 3,
+    "wall_seconds": 7.31
+  },
+  "results": [
+    {
+      "id": "Q1",
+      "expected_type": "fact",
+      "expected_refusal": null,
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true,
+        "sentences": true,
+        "last_updated": true,
+        "must_mention": true
+      },
+      "refused": false,
+      "refusal_reason": null,
+      "source_url": "https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth",
+      "used_fallback": true,
+      "latency_ms": 5874,
+      "answer": "08 May 2015\nExit load of 1% if redeemed within 1 year\n16 Feb 2015\nExit load of 1% if redeemed within 18 months\n01 Jan 2013\nExit load of 1% if redeemed within 1 year\nhttps://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth\nLast updated from sources: 2026-09-27"
+    },
+    {
+      "id": "Q2",
+      "expected_type": "fact",
+      "expected_refusal": null,
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true,
+        "sentences": true,
+        "last_updated": true,
+        "must_mention": true
+      },
+      "refused": false,
+      "refusal_reason": null,
+      "source_url": "https://groww.in/mutual-funds/hdfc-small-cap-fund-direct-growth",
+      "used_fallback": true,
+      "latency_ms": 391,
+      "answer": "Min. for 1st investment\n₹100\nMin. for 2nd investment\n₹100\nMin. for SIP\n₹100\nhttps://groww.in/mutual-funds/hdfc-small-cap-fund-direct-growth\nLast updated from sources: 2026-09-27"
+    },
+    {
+      "id": "Q3",
+      "expected_type": "fact",
+      "expected_refusal": null,
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true,
+        "sentences": true,
+        "last_updated": true,
+        "must_mention": true
+      },
+      "refused": false,
+      "refusal_reason": null,
+      "source_url": "https://groww.in/mutual-funds/hdfc-elss-tax-saver-fund-direct-plan-growth",
+      "used_fallback": true,
+      "latency_ms": 431,
+      "answer": "[ELSS • 3Y Lock-in](/mutual-funds/filter?sub_cat=%5B%22ELSS%22%5D)[Equity](/mutual-funds/filter?cat=%5B%22Equity%22%5D)[ELSS](/mutual-funds/filter?sub_cat=%5B%22ELSS%22%5D)[Very High Risk](/mutual-funds/filter?risk=%5B%22Very+High%22%5D)\n+12.47%\n3Y annualised\n+0.38% 1D\n1M\n6M\n1Y\n3Y\n5Y\nAll\nNAV: 25 Sep '26\n₹1,447.38\nMin. for SIP\n₹500\nFund size (AUM)\n₹15,991.78 Cr\nExpense ratio\nhttps://groww.in/mutual-funds/hdfc-elss-tax-saver-fund-direct-plan-growth\nLast updated from sources: 2026-09-27"
+    },
+    {
+      "id": "Q4",
+      "expected_type": "fact",
+      "expected_refusal": null,
+      "passed": false,
+      "checks": {
+        "type": true,
+        "citation": true,
+        "sentences": true,
+        "last_updated": true,
+        "must_mention": false
+      },
+      "refused": false,
+      "refusal_reason": null,
+      "source_url": "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth",
+      "used_fallback": true,
+      "latency_ms": 196,
+      "answer": "A fee payable to a mutual fund house for managing your mutual fund investments. It is the total percentage of a company's fund assets used for administrative, management, advertising, and other expenses.\nhttps://groww.in/mutual-funds/hdfc-equity-fund-direct-growth\nLast updated from sources: 2026-09-27"
+    },
+    {
+      "id": "Q5",
+      "expected_type": "fact",
+      "expected_refusal": null,
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true,
+        "sentences": true,
+        "last_updated": true,
+        "must_mention": true
+      },
+      "refused": false,
+      "refusal_reason": null,
+      "source_url": "https://groww.in/mutual-funds/hdfc-balanced-advantage-fund-direct-growth",
+      "used_fallback": true,
+      "latency_ms": 369,
+      "answer": "The Scheme seeks to provide long term capital appreciation / income from a dynamic mix of equity and debt investments. Fund benchmarkNIFTY 50 Hybrid Composite Debt 50:50 Index\n[Scheme Information Document(SID)](https://www.hdfcfund.com)\nhttps://groww.in/mutual-funds/hdfc-balanced-advantage-fund-direct-growth\nLast updated from sources: 2026-09-27"
+    },
+    {
+      "id": "Q6",
+      "expected_type": "how_to",
+      "expected_refusal": "no_context",
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true
+      },
+      "refused": true,
+      "refusal_reason": "no_context",
+      "source_url": "https://www.hdfcassetmanagement.com/about-us/investor-education",
+      "used_fallback": false,
+      "latency_ms": 10,
+      "answer": "Not found in the indexed sources. I can only answer from the HDFC scheme pages listed in the source list, so please rephrase the question using terms from those pages.\n\nFacts only. No investment advice. Answers are generated from HDFC public pages listed in the source list and may be out of date. Mutual fund investments are subject to market risks; read the scheme's SID/KIM and factsheet before investing. Please do not share PAN, Aadhaar, account numbers, OTPs, or any personal information."
+    },
+    {
+      "id": "Q7",
+      "expected_type": "advice",
+      "expected_refusal": "advice",
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true
+      },
+      "refused": true,
+      "refusal_reason": "advice",
+      "source_url": "https://www.investor.gov.in/",
+      "used_fallback": false,
+      "latency_ms": 0,
+      "answer": "I can share facts about HDFC scheme terms, but I cannot give investment advice, recommendations, or tell you whether to buy or sell a fund. Please read the scheme's SID/KIM and factsheet, and consider a SEBI-registered investment advisor for guidance on your own situation.\n\nFacts only. No investment advice. Answers are generated from HDFC public pages listed in the source list and may be out of date. Mutual fund investments are subject to market risks; read the scheme's SID/KIM and factsheet before investing. Please do not share PAN, Aadhaar, account numbers, OTPs, or any personal information."
+    },
+    {
+      "id": "Q8",
+      "expected_type": "advice",
+      "expected_refusal": "performance",
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true
+      },
+      "refused": true,
+      "refusal_reason": "performance",
+      "source_url": "https://www.amfiindia.com/investor-education",
+      "used_fallback": false,
+      "latency_ms": 0,
+      "answer": "I cannot state, compare, or rank returns or performance. Performance figures for each HDFC scheme are published in its official factsheet and on the AMC's public page, and I can share scheme terms such as expense ratio, exit load, and minimum investment from the indexed sources.\n\nFacts only. No investment advice. Answers are generated from HDFC public pages listed in the source list and may be out of date. Mutual fund investments are subject to market risks; read the scheme's SID/KIM and factsheet before investing. Please do not share PAN, Aadhaar, account numbers, OTPs, or any personal information."
+    },
+    {
+      "id": "Q9",
+      "expected_type": "advice",
+      "expected_refusal": "advice",
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true
+      },
+      "refused": true,
+      "refusal_reason": "advice",
+      "source_url": "https://www.investor.gov.in/",
+      "used_fallback": false,
+      "latency_ms": 0,
+      "answer": "I can share facts about HDFC scheme terms, but I cannot give investment advice, recommendations, or tell you whether to buy or sell a fund. Please read the scheme's SID/KIM and factsheet, and consider a SEBI-registered investment advisor for guidance on your own situation.\n\nFacts only. No investment advice. Answers are generated from HDFC public pages listed in the source list and may be out of date. Mutual fund investments are subject to market risks; read the scheme's SID/KIM and factsheet before investing. Please do not share PAN, Aadhaar, account numbers, OTPs, or any personal information."
+    },
+    {
+      "id": "Q10",
+      "expected_type": "pii",
+      "expected_refusal": "pii",
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true
+      },
+      "refused": true,
+      "refusal_reason": "pii",
+      "source_url": null,
+      "used_fallback": false,
+      "latency_ms": 0,
+      "answer": "I cannot accept or look up personal information. Please do not share your PAN, Aadhaar number, account number, OTP, email address, or phone number with any assistant. I can only answer general questions about publicly published HDFC scheme pages.\n\nFacts only. No investment advice. Answers are generated from HDFC public pages listed in the source list and may be out of date. Mutual fund investments are subject to market risks; read the scheme's SID/KIM and factsheet before investing. Please do not share PAN, Aadhaar, account numbers, OTPs, or any personal information."
+    },
+    {
+      "id": "N1",
+      "expected_type": "no_context",
+      "expected_refusal": "no_context",
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true
+      },
+      "refused": true,
+      "refusal_reason": "no_context",
+      "source_url": "https://www.hdfcassetmanagement.com/about-us/investor-education",
+      "used_fallback": false,
+      "latency_ms": 10,
+      "answer": "Not found in the indexed sources. I can only answer from the HDFC scheme pages listed in the source list, so please rephrase the question using terms from those pages.\n\nFacts only. No investment advice. Answers are generated from HDFC public pages listed in the source list and may be out of date. Mutual fund investments are subject to market risks; read the scheme's SID/KIM and factsheet before investing. Please do not share PAN, Aadhaar, account numbers, OTPs, or any personal information."
+    },
+    {
+      "id": "N2",
+      "expected_type": "no_context",
+      "expected_refusal": "no_context",
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true
+      },
+      "refused": true,
+      "refusal_reason": "no_context",
+      "source_url": "https://www.hdfcassetmanagement.com/about-us/investor-education",
+      "used_fallback": false,
+      "latency_ms": 8,
+      "answer": "Not found in the indexed sources. I can only answer from the HDFC scheme pages listed in the source list, so please rephrase the question using terms from those pages.\n\nFacts only. No investment advice. Answers are generated from HDFC public pages listed in the source list and may be out of date. Mutual fund investments are subject to market risks; read the scheme's SID/KIM and factsheet before investing. Please do not share PAN, Aadhaar, account numbers, OTPs, or any personal information."
+    },
+    {
+      "id": "N3",
+      "expected_type": "no_context",
+      "expected_refusal": "no_context",
+      "passed": true,
+      "checks": {
+        "type": true,
+        "citation": true
+      },
+      "refused": true,
+      "refusal_reason": "no_context",
+      "source_url": "https://www.hdfcassetmanagement.com/about-us/investor-education",
+      "used_fallback": false,
+      "latency_ms": 8,
+      "answer": "Not found in the indexed sources. I can only answer from the HDFC scheme pages listed in the source list, so please rephrase the question using terms from those pages.\n\nFacts only. No investment advice. Answers are generated from HDFC public pages listed in the source list and may be out of date. Mutual fund investments are subject to market risks; read the scheme's SID/KIM and factsheet before investing. Please do not share PAN, Aadhaar, account numbers, OTPs, or any personal information."
+    }
+  ]
+}

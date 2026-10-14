@@ -1,0 +1,82 @@
+{
+  "corpus_version": "mf_faq_hdfc_v1",
+  "generated_at": "2026-09-27T07:27:48Z",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "chunking": {
+    "strategy": "recursive_heading_aware",
+    "chunk_tokens": 600,
+    "overlap_tokens": 90,
+    "preserve_tables": true
+  },
+  "documents": [
+    {
+      "doc_id": "5e36ffc6fb3b",
+      "scheme_name": "HDFC Large Cap Fund",
+      "category": "Large Cap",
+      "plan": "Direct Growth",
+      "url": "https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth",
+      "page_title": "HDFC Large Cap Fund Direct Growth - NAV, Mutual Fund Performance & Portfolio",
+      "fetched_at": "2026-09-27",
+      "content_sha256": "bd911f01e6bbdc282673a10dffce014abf9f285965ff740a6425b9b44d07e904",
+      "raw_path": "data/raw/5e36ffc6fb3b.html",
+      "processed_path": "data/processed/5e36ffc6fb3b.md",
+      "chunk_count": 56
+    },
+    {
+      "doc_id": "3c7c7a26e400",
+      "scheme_name": "HDFC Equity Fund",
+      "category": "Flexi Cap",
+      "plan": "Direct Growth",
+      "url": "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth",
+      "page_title": "HDFC Flexi Cap Direct Plan Growth - NAV, Mutual Fund Performance & Portfolio",
+      "fetched_at": "2026-09-27",
+      "content_sha256": "abc5d6d71afcab051c8f54e141e9942af932ba763547e799d8b1c993d4d0a5b1",
+      "raw_path": "data/raw/3c7c7a26e400.html",
+      "processed_path": "data/processed/3c7c7a26e400.md",
+      "chunk_count": 68
+    },
+    {
+      "doc_id": "7ade57713022",
+      "scheme_name": "HDFC ELSS Tax Saver Fund",
+      "category": "ELSS",
+      "plan": "Direct Growth",
+      "url": "https://groww.in/mutual-funds/hdfc-elss-tax-saver-fund-direct-plan-growth",
+      "page_title": "HDFC ELSS Tax Saver Fund Direct Plan Growth - NAV, Mutual Fund Performance & Portfolio",
+      "fetched_at": "2026-09-27",
+      "content_sha256": "efde7983f5586117a7a2b3961ef4fe74db815ddf2dd6a5311d02e266d1c0663d",
+      "raw_path": "data/raw/7ade57713022.html",
+      "processed_path": "data/processed/7ade57713022.md",
+      "chunk_count": 65
+    },
+    {
+      "doc_id": "e32189fee209",
+      "scheme_name": "HDFC Small Cap Fund",
+      "category": "Small Cap",
+      "plan": "Direct Growth",
+      "url": "https://groww.in/mutual-funds/hdfc-small-cap-fund-direct-growth",
+      "page_title": "HDFC Small Cap Fund Direct Growth - NAV, Mutual Fund Performance & Portfolio",
+      "fetched_at": "2026-09-27",
+      "content_sha256": "bcdb31693966f6827a2a4d316cda41b34f71de80ba3bdca63c8022346144e8d7",
+      "raw_path": "data/raw/e32189fee209.html",
+      "processed_path": "data/processed/e32189fee209.md",
+      "chunk_count": 65
+    },
+    {
+      "doc_id": "a59fde1656d2",
+      "scheme_name": "HDFC Balanced Advantage Fund",
+      "category": "Balanced Advantage",
+      "plan": "Direct Growth",
+      "url": "https://groww.in/mutual-funds/hdfc-balanced-advantage-fund-direct-growth",
+      "page_title": "HDFC Balanced Advantage Fund Direct Growth - NAV, Mutual Fund Performance & Portfolio",
+      "fetched_at": "2026-09-27",
+      "content_sha256": "5680ae284a47a4345d6e058969c50bf055746e348eae609ac6dbc0fc8327bfe2",
+      "raw_path": "data/raw/a59fde1656d2.html",
+      "processed_path": "data/processed/a59fde1656d2.md",
+      "chunk_count": 205
+    }
+  ],
+  "totals": {
+    "documents": 5,
+    "chunks": 459
+  }
+}

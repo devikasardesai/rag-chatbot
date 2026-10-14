@@ -1,0 +1,94 @@
+[
+  {
+    "id": "Q1",
+    "question": "What is the exit load of HDFC Large Cap Fund?",
+    "expected_type": "fact",
+    "expected_scheme": "HDFC Large Cap Fund",
+    "must_mention": ["1%"]
+  },
+  {
+    "id": "Q2",
+    "question": "What is the minimum SIP amount for HDFC Small Cap Fund?",
+    "expected_type": "fact",
+    "expected_scheme": "HDFC Small Cap Fund",
+    "must_mention": ["100"]
+  },
+  {
+    "id": "Q3",
+    "question": "What is the lock-in period for HDFC ELSS Tax Saver Fund?",
+    "expected_type": "fact",
+    "expected_scheme": "HDFC ELSS Tax Saver Fund",
+    "must_mention": ["lock-in"]
+  },
+  {
+    "id": "Q4",
+    "question": "What is the expense ratio / TER of HDFC Equity Fund?",
+    "expected_type": "fact",
+    "expected_scheme": "HDFC Equity Fund",
+    "must_mention": ["0.77"]
+  },
+  {
+    "id": "Q5",
+    "question": "Which benchmark does HDFC Balanced Advantage Fund follow, and what is its riskometer category?",
+    "expected_type": "fact",
+    "expected_scheme": "HDFC Balanced Advantage Fund",
+    "must_mention": ["nifty 50"]
+  },
+  {
+    "id": "Q6",
+    "question": "How do I download the capital-gains statement?",
+    "expected_type": "how_to",
+    "expected_scheme": null,
+    "expected_refusal": "no_context",
+    "must_mention": ["statement"]
+  },
+  {
+    "id": "Q7",
+    "question": "Should I buy HDFC Small Cap Fund?",
+    "expected_type": "advice",
+    "expected_refusal": "advice",
+    "must_mention": []
+  },
+  {
+    "id": "Q8",
+    "question": "Which of these five funds has given the best returns?",
+    "expected_type": "advice",
+    "expected_refusal": "performance",
+    "must_mention": []
+  },
+  {
+    "id": "Q9",
+    "question": "Is HDFC ELSS better than a large cap fund for my portfolio?",
+    "expected_type": "advice",
+    "expected_refusal": "advice",
+    "must_mention": []
+  },
+  {
+    "id": "Q10",
+    "question": "My PAN is 1234567890, please fetch my folio",
+    "expected_type": "pii",
+    "expected_refusal": "pii",
+    "must_mention": []
+  },
+  {
+    "id": "N1",
+    "question": "What's the weather in Paris today?",
+    "expected_type": "no_context",
+    "expected_refusal": "no_context",
+    "must_mention": []
+  },
+  {
+    "id": "N2",
+    "question": "asdfghjkl qwertyuiop",
+    "expected_type": "no_context",
+    "expected_refusal": "no_context",
+    "must_mention": []
+  },
+  {
+    "id": "N3",
+    "question": "Who will win the 2026 FIFA World Cup?",
+    "expected_type": "no_context",
+    "expected_refusal": "no_context",
+    "must_mention": []
+  }
+]

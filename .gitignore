@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+
+# Secrets: never commit real API keys. .env.example is the committed template.
+.env
+.env.*
+!.env.example
+
+data/raw/*
+data/processed/*
+data/chroma/*
+logs/*
+*.mp4

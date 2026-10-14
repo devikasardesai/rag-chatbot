@@ -1,0 +1,32 @@
+# Phase 0 scaffold — dependency manifest
+#
+# Each package maps to an architecture stage:
+#   sentence-transformers  -> Stage 4  embed (all-MiniLM-L6-v2, 384-dim, CPU)
+#   chromadb               -> Stage 5  store (persistent client, cosine HNSW space)
+#   langchain-text-splitters -> Stage 3 chunk (RecursiveCharacterTextSplitter only;
+#                             no LangChain chains, agents or retrieval frameworks)
+#   beautifulsoup4 + lxml  -> Stage 2  clean (main-content fallback, boilerplate removal)
+#   trafilatura            -> Stage 2  clean (primary HTML -> Markdown extraction)
+#   markdownify            -> Stage 2  clean (HTML -> ATX Markdown in the fallback path)
+#   httpx                  -> Stage 1  load (HTTP fetch with timeout, retry, cache)
+#   numpy                  -> Stage 4  embed (float32 vector matrix, unit-norm assertions)
+#   streamlit              -> FR-30..34 tiny UI (welcome line, 3 examples, disclaimer)
+#   python-dotenv          -> loads .env (GROQ_API_KEY, HF_TOKEN) in config
+#   pytest                 -> offline test suite (no network, no live model)
+#
+# Chat generation uses the Groq API (GROQ_API_KEY in .env), not a local Ollama process.
+#
+# Requires Python >= 3.10
+
+beautifulsoup4>=4.12,<5
+chromadb>=0.5,<2
+httpx>=0.27,<1
+langchain-text-splitters>=0.2,<2
+lxml>=5,<7
+markdownify>=0.13,<2
+numpy>=1.26,<3
+python-dotenv>=1.0,<2
+pytest>=8,<10
+sentence-transformers>=3,<6
+streamlit>=1.37,<2
+trafilatura>=1.12,<3
