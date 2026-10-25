@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 import chromadb
 import numpy as np
+from chromadb.config import Settings
 
 from src import config, logger
 
@@ -70,7 +71,9 @@ def validate_metadata(metadata: dict) -> None:
 
 @lru_cache(maxsize=4)
 def _client_for(directory: str) -> chromadb.PersistentClient:
-    return chromadb.PersistentClient(path=directory)
+    return chromadb.PersistentClient(
+        path=directory, settings=Settings(anonymized_telemetry=False)
+    )
 
 
 def get_client() -> chromadb.PersistentClient:

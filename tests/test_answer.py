@@ -543,18 +543,24 @@ class TestAnswerQuestion:
         answer.answer_question("My PAN is ABCDE1234F")
         for name in ("answers.jsonl", "retrieval.jsonl"):
             text = (config.LOG_DIR / name).read_text()
+            record = json.loads(text)
             assert "ABCDE1234F" not in text
-            assert "[redacted:" in text
+            assert "question" not in record
+            assert "question_sha256" in record
+            assert record["question_chars"] == len("My PAN is ABCDE1234F")
 
     def test_factual_answer_is_logged_with_citation_and_flags(self, monkeypatch, tmp_data_dir):
         _stub_pipeline(monkeypatch, [_chunk()], f"Fact.\n{ALLOWED_URL}")
         answer.answer_question("What is the exit load?")
         record = json.loads((config.LOG_DIR / "answers.jsonl").read_text().splitlines()[-1])
         for key in (
-            "question", "answer", "citation", "last_updated", "guardrail_flags",
-            "latency_ms", "refused", "used_fallback",
+            "question_sha256", "question_chars", "answer_sha256", "answer_chars",
+            "citation", "last_updated", "guardrail_flags", "latency_ms", "refused",
+            "used_fallback",
         ):
             assert key in record
+        assert "question" not in record
+        assert "answer" not in record
         assert record["citation"] == ALLOWED_URL
         assert record["refused"] is False
 

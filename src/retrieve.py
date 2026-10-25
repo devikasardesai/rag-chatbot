@@ -437,7 +437,7 @@ def retrieve(
 
 
 def log_result(result: RetrievalResult, intent: str = "fact", pii: bool = False) -> None:
-    """Append one redacted JSON line for this retrieval to ``logs/retrieval.jsonl`` (FR-18)."""
+    """Append one sanitized JSON line for this retrieval to ``logs/retrieval.jsonl`` (FR-18)."""
     logger.log_retrieval(
         {
             "ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

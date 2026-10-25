@@ -80,10 +80,11 @@ def _fake_html(body_lines: list[str] | None = None) -> str:
 
 
 class _FakeResponse:
-    def __init__(self, text: str, status_code: int = 200):
+    def __init__(self, text: str, status_code: int = 200, headers: dict | None = None):
         self.text = text
         self.status_code = status_code
         self.content = text.encode("utf-8")
+        self.headers = headers or {}
 
 
 @pytest.fixture(autouse=True)
@@ -296,8 +297,76 @@ class TestHttpFailures:
         monkeypatch.setattr(httpx, "get", _handler)
         ingest.fetch_page(corpus[0])
         assert seen["headers"]["User-Agent"] == config.USER_AGENT
-        assert seen["follow_redirects"] is True
+        assert seen["follow_redirects"] is False
         assert seen["timeout"] == config.HTTP_TIMEOUT_S
+
+    def test_follows_a_public_https_redirect(self, monkeypatch, corpus, tmp_data_dir, no_sleep):
+        calls: list[tuple[str, bool]] = []
+
+        def _handler(url, **kwargs):
+            calls.append((url, kwargs["follow_redirects"]))
+            if len(calls) == 1:
+                return _FakeResponse(
+                    "", status_code=302, headers={"location": "/mutual-funds/redirected"}
+                )
+            return _FakeResponse(_fake_html())
+
+        monkeypatch.setattr(httpx, "get", _handler)
+        document = ingest.fetch_page(corpus[0])
+        assert document.markdown
+        assert calls == [
+            (corpus[0].url, False),
+            ("https://groww.in/mutual-funds/redirected", False),
+        ]
+
+    @pytest.mark.parametrize(
+        "location",
+        [
+            "http://groww.in/mutual-funds/redirected",
+            "https://localhost/mutual-funds/redirected",
+            "https://foo.local/mutual-funds/redirected",
+            "https://127.0.0.1/mutual-funds/redirected",
+            "https://127.1/mutual-funds/redirected",
+            "https://2130706433/mutual-funds/redirected",
+            "https://10.0.0.1/mutual-funds/redirected",
+            "https://169.254.169.254/latest/meta-data/",
+            "https://[::1]/mutual-funds/redirected",
+            "https://groww.in:8443/mutual-funds/redirected",
+            "https://user:pass@groww.in/mutual-funds/redirected",
+        ],
+    )
+    def test_rejects_unsafe_redirect_targets(
+        self, monkeypatch, corpus, tmp_data_dir, no_sleep, location
+    ):
+        calls: list[str] = []
+
+        def _handler(url, **kwargs):
+            calls.append(url)
+            return _FakeResponse("", status_code=302, headers={"location": location})
+
+        monkeypatch.setattr(httpx, "get", _handler)
+        with pytest.raises(ingest.IngestError):
+            ingest.fetch_page(corpus[0])
+        assert calls == [corpus[0].url]
+
+    def test_rejects_a_redirect_without_location(self, monkeypatch, corpus, tmp_data_dir, no_sleep):
+        monkeypatch.setattr(
+            httpx, "get", lambda url, **kwargs: _FakeResponse("", status_code=302)
+        )
+        with pytest.raises(ingest.IngestError, match="without Location"):
+            ingest.fetch_page(corpus[0])
+
+    def test_rejects_too_many_redirects(self, monkeypatch, corpus, tmp_data_dir, no_sleep):
+        calls: list[str] = []
+
+        def _handler(url, **kwargs):
+            calls.append(url)
+            return _FakeResponse("", status_code=302, headers={"location": "/loop"})
+
+        monkeypatch.setattr(httpx, "get", _handler)
+        with pytest.raises(ingest.IngestError, match="too many redirects"):
+            ingest.fetch_page(corpus[0])
+        assert len(calls) == config.HTTP_MAX_REDIRECTS + 1
 
     def test_politeness_delay_applied_between_requests(self, monkeypatch, corpus, tmp_data_dir, no_sleep):
         monkeypatch.setattr(httpx, "get", lambda url, **kwargs: _FakeResponse(_fake_html()))

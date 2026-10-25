@@ -144,7 +144,8 @@ Facts only. No investment advice.
 number, account number, OTP, email address, or phone number with any assistant. I can only
 answer general questions about publicly published HDFC scheme pages.
 
-*(PII input is detected before retrieval and is redacted in `logs/answers.jsonl`; no raw PII
-is persisted. No source link is emitted for a PII refusal.)*
+*(PII input is detected before retrieval. `logs/answers.jsonl` stores only a SHA-256
+fingerprint and character count, never the raw question or answer. No source link is emitted
+for a PII refusal.)*
 
 Facts only. No investment advice.

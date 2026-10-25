@@ -47,7 +47,8 @@ handed to a second person/agent in parallel with 1–2 and 6 respectively.
 - **Python 3.10+**, type hints on all public functions, `dataclass` (frozen) for result types.
 - **No `StrEnum`** (Python 3.11+): use `class Intent(str, Enum)`.
 - Docstrings on public functions; **no inline commentary** in the code.
-- No secrets, no API keys, no telemetry. Only outbound network access is Phase 1 fetching.
+- No secrets or API keys committed. Streamlit usage stats and ChromaDB telemetry are
+  disabled; outbound access is limited to allowlisted source fetches and Groq generation.
 - Every module has a `main()` + `if __name__ == "__main__":` CLI entry.
 - All tunable values live in `src/config.py`; no magic numbers in stage modules.
 - Errors: raise domain exceptions (`IngestError`, `OutOfScopeError`, `LLMUnavailable`); the
@@ -157,8 +158,9 @@ rag-chatbot/
     - `configure_logging()` → creates `logs/`, one StreamHandler (INFO) + rotating file handler.
     - `log_retrieval(record: dict) -> None` → appends one JSON line to `logs/retrieval.jsonl`.
     - `log_answer(record: dict) -> None` → appends to `logs/answers.jsonl`.
-    - `redact_pii(text: str) -> str` → replaces any PII-looking span with `sha256[:8]` so raw
-      PII is never written to disk (PRD FR-29).
+    - `redact_pii(text: str) -> str` → replaces PII-looking spans in remaining metadata;
+      structured question/answer fields are replaced by SHA-256 fingerprints before writing
+      so raw PII and raw question/answer text are never written to disk (PRD FR-29).
 0.5 Write `tests/conftest.py` with fixtures: `corpus` (from config), `tmp_data_dir`
     (monkeypatches `config.DATA_DIR`/`CHROMA_DIR`/`LOG_DIR` to `tmp_path`), `sample_markdown`
     (a small realistic scheme-page Markdown fixture with headings, a fee table, and an
@@ -209,8 +211,9 @@ src/__init__.py, src/config.py, src/logger.py, tests/conftest.py, tests/test_con
 Requirements: Python 3.10+ compatible (use `class X(str, Enum)`, never StrEnum); frozen
 dataclasses for SourceSpec; ALL tunable values in config.py; the PROMPT_SYSTEM string must be
 copied verbatim from architecture.md §7.3 including rule numbering; logger must write JSONL
-and must never persist raw PII (hash it). No new dependencies beyond requirements.txt. No
-inline comments in code, docstrings on public functions only. Finish by running the Phase 0
+and must never persist raw question/answer text or raw PII (store SHA-256 fingerprints). No
+new dependencies beyond requirements.txt. No inline comments in code, docstrings on public
+functions only. Finish by running the Phase 0
 verification commands and pasting the real output. Do not start any later phase.
 ```
 
@@ -795,7 +798,7 @@ order and a self-test.
     context → `REFUSAL_NO_CONTEXT` → `build_context` → `build_prompt` → `generate` (on
     `LLMUnavailable` → `extractive_fallback`) → `guardrails.validate_answer` → repair pass →
     if still invalid → `extractive_fallback` → assemble `AnswerResult` → `log_retrieval` +
-    `log_answer` (redacted).
+    `log_answer` (raw-text sanitized to SHA-256 fingerprints).
 8.2 `last_updated` value = the `fetched_at` of the **highest-scoring retrieved chunk's
     document** (fall back to the manifest's `generated_at`); never invent a date.
 8.3 CLI in `src/answer.py`:
@@ -805,8 +808,8 @@ order and a self-test.
     - `--selftest` — asserts: collection exists, chunk count > 100, embedding dim 384, Groq
       reachable, one canned query returns a cited answer; prints a PASS/FAIL table
     - `--json` — machine-readable `AnswerResult` for the eval harness (Phase 10)
-8.4 Add `logs/answers.jsonl` writes: question (redacted), answer, citation, flags, latency,
-    `refused`, `used_fallback`.
+8.4 Add `logs/answers.jsonl` writes: question/answer SHA-256 fingerprints and character
+    counts, citation, flags, latency, `refused`, `used_fallback`.
 8.5 Edge cases to implement and test: empty/whitespace question; question in a non-English
     script (answer "not found in sources" rather than a guess); question naming an AMC outside
     the corpus (e.g. "Axis Small Cap") → `no_context` refusal; very long question (> 2000
@@ -851,7 +854,7 @@ Implement Phase 8 of implementation.md (read implementation.md §PHASE 8 and arc
 PII -> advice/performance intent (deterministic refusal, no LLM) -> retrieve -> no_context
 refusal -> build_context -> build_prompt -> generate (LLMUnavailable -> extractive_fallback) ->
 guardrails.validate_answer -> single repair pass -> extractive_fallback if still invalid ->
-assemble AnswerResult -> log_retrieval + log_answer with PII redaction. last_updated must come
+assemble AnswerResult -> log_retrieval + log_answer with raw-text sanitization (SHA-256 fingerprints). last_updated must come
 from the top chunk's metadata fetched_at. Add the --chat, --question, --json and --selftest CLI
 flags, and handle empty, non-Latin, out-of-corpus-AMC, and over-long inputs. Run the four
 Phase 8 verification commands, paste the real outputs including the two refusals, and confirm
@@ -903,7 +906,7 @@ run.sh ui          # then manually: load page, click all 3 chips, ask 1 refusal,
 - [ ] Disclaimer visible without scrolling
 - [ ] Every answer shows one clickable source link + last-updated date
 - [ ] Refusal path renders correctly and shows its educational link
-- [ ] Nothing persisted to disk
+- [ ] No raw question/answer text or chat history persisted to disk
 
 ### Commit
 
@@ -983,7 +986,7 @@ python eval/run_eval.py --live          # with GROQ_API_KEY set (calls Groq)
 - [ ] `pytest -q` green offline
 - [ ] ≥ 8/10 PRD queries answered correctly with exactly one valid in-corpus link
 - [ ] All 3 advice/performance queries refused with an educational link
-- [ ] PII query refused; `logs/answers.jsonl` contains no raw PII
+- [ ] PII query refused; `logs/answers.jsonl` contains no raw question/answer text or raw PII
 - [ ] 3 nonsense queries return `no_context`
 - [ ] `tuning_notes.md` documents the final `min_score` and `MMR_LAMBDA` with the sweep evidence
 - [ ] `sample_qa.md` has 5–10 real transcripts
@@ -1056,7 +1059,8 @@ python -c "import csv;rows=list(csv.DictReader(open('sources.csv')));assert len(
 - [ ] `DISCLAIMER.md` matching the UI text exactly
 - [ ] Demo video recorded (UI only) or project hosted with a link
 - [ ] All Phase 10 acceptance criteria still pass on a clean clone run
-- [ ] No back-end screenshots, no third-party blog sources, no PII anywhere in the repo or logs
+- [ ] No back-end screenshots, no third-party blog sources, no raw PII in source/docs/new
+  logs; historical logs reviewed or removed before sharing
 
 ### Commit
 

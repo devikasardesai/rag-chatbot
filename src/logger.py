@@ -1,4 +1,4 @@
-"""JSONL logging for retrieval and answer traces, with PII redaction."""
+"""JSONL logging for retrieval and answer traces, without raw question/answer text."""
 from __future__ import annotations
 
 import hashlib
@@ -12,6 +12,7 @@ from src import config
 LOGGER_NAME = "rag"
 
 PII_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("api_key", re.compile(r"\bgsk_[A-Za-z0-9]{20,}\b")),
     ("pan", re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b")),
     ("aadhaar", re.compile(r"\b[2-9]\d{3}[\s-]?\d{4}[\s-]?\d{4}\b")),
     ("email", re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")),
@@ -22,12 +23,23 @@ PII_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 
 REDACTED = "[redacted:{kind}:{digest}]"
 
+SENSITIVE_TEXT_FIELDS = frozenset(
+    {"question", "normalized_question", "answer", "raw_question", "raw_answer"}
+)
+
 _COMBINED_PATTERN = re.compile(
     "|".join(
         f"(?P<{kind}_{index}>{pattern.pattern})"
         for index, (kind, pattern) in enumerate(PII_PATTERNS)
     )
 )
+
+class _RedactingFormatter(logging.Formatter):
+    """Redact PII and API-key shapes from every formatted log record."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return redact_pii(super().format(record))
+
 
 _configured = False
 
@@ -39,7 +51,7 @@ def configure_logging(level: int = logging.INFO) -> logging.Logger:
     if _configured:
         return logger
     config.LOG_DIR.mkdir(parents=True, exist_ok=True)
-    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
+    formatter = _RedactingFormatter("%(asctime)s %(levelname)s %(name)s %(message)s")
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
     file_handler = RotatingFileHandler(
@@ -73,11 +85,35 @@ def redact_pii(text: str) -> str:
     return _COMBINED_PATTERN.sub(_replace_match, text)
 
 
+def _fingerprint(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()[:16]
+
+
+def _sanitize_record(value: object) -> object:
+    if isinstance(value, dict):
+        sanitized: dict = {}
+        for key, item in value.items():
+            if key in SENSITIVE_TEXT_FIELDS and isinstance(item, str):
+                sanitized[f"{key}_sha256"] = _fingerprint(item)
+                sanitized[f"{key}_chars"] = len(item)
+            else:
+                sanitized[key] = _sanitize_record(item)
+        return sanitized
+    if isinstance(value, (list, tuple)):
+        return [_sanitize_record(item) for item in value]
+    return value
+
+
 def _redact_value(value: object) -> object:
     if isinstance(value, str):
         return redact_pii(value)
     if isinstance(value, dict):
-        return {key: _redact_value(item) for key, item in value.items()}
+        return {
+            key: item
+            if isinstance(key, str) and key.endswith(("_sha256", "_chars"))
+            else _redact_value(item)
+            for key, item in value.items()
+        }
     if isinstance(value, (list, tuple)):
         return [_redact_value(item) for item in value]
     return value
@@ -86,16 +122,17 @@ def _redact_value(value: object) -> object:
 def _append_jsonl(filename: str, record: dict) -> None:
     path = config.LOG_DIR / filename
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps(_redact_value(record), ensure_ascii=False, default=str)
+    sanitized = _sanitize_record(record)
+    payload = json.dumps(_redact_value(sanitized), ensure_ascii=False, default=str)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(payload + "\n")
 
 
 def log_retrieval(record: dict) -> None:
-    """Append one redacted JSON line describing a retrieval to logs/retrieval.jsonl."""
+    """Append one redacted JSON line without the raw question or context."""
     _append_jsonl("retrieval.jsonl", record)
 
 
 def log_answer(record: dict) -> None:
-    """Append one redacted JSON line describing an answer to logs/answers.jsonl."""
+    """Append one redacted JSON line without the raw question or full answer."""
     _append_jsonl("answers.jsonl", record)

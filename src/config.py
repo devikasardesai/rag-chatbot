@@ -108,9 +108,17 @@ MIN_SIMILARITY = 0.45
 MMR_LAMBDA = 0.7
 MAX_CHUNKS_PER_SECTION = 2
 MAX_CONTEXT_TOKENS = 2400
-MAX_QUESTION_CHARS = 500
 CANDIDATE_POOL = 50
 LEXICAL_ALPHA = 0.65
+
+# Abuse controls for the Streamlit UI. These are best-effort, in-process safeguards rather
+# than a provider-side spending cap: they reset when the process restarts and each worker
+# or instance keeps its own counters.
+MAX_QUESTION_CHARS = 500
+MAX_QUESTIONS_PER_SESSION = 10
+MAX_GLOBAL_QUESTIONS_PER_WINDOW = 3
+GLOBAL_QUESTION_WINDOW_SECONDS = 60
+MAX_CONCURRENT_QUESTIONS = 1
 
 # Generation is Groq only (GroqChat, OpenAI-compatible). Embeddings stay local MiniLM.
 LLM_PROVIDER = "groq"
@@ -197,4 +205,5 @@ DISCLAIMER = (
 USER_AGENT = "rag-mf-faq-demo/0.1 (class project; contact: student@example.edu)"
 HTTP_TIMEOUT_S = 20
 HTTP_RETRIES = 1
+HTTP_MAX_REDIRECTS = 5
 POLITENESS_DELAY_S = 1.0

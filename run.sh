@@ -39,8 +39,11 @@ case "${1:-}" in
   setup)
     "$PYTHON" -m venv "$VENV_DIR"
     activate_venv
-    "$PYTHON" -m pip install --upgrade pip
+    "$PYTHON" -m pip install --upgrade "pip>=26.2.2"
     "$PYTHON" -m pip install -r requirements.txt
+    if [ -f .env ]; then
+      chmod 600 .env 2>/dev/null || true
+    fi
     if [ -f .env ] && grep -q '^GROQ_API_KEY=.\+' .env; then
       echo "run.sh: GROQ_API_KEY is set. Chat will call Groq."
     else

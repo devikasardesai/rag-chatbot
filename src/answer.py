@@ -345,7 +345,7 @@ def _log(
     question: str,
     started: float,
 ) -> None:
-    """Append one redacted retrieval line and one redacted answer line (FR-18, §7.1)."""
+    """Append one sanitized retrieval line and one sanitized answer line (FR-18, §7.1)."""
     total_ms = int(round((time.perf_counter() - started) * 1000))
     hits = list(getattr(result_object, "top_chunks", []) or [])
     retrieval_ms = getattr(result, "latency_ms", 0) if result is not None else 0

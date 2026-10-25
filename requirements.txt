@@ -12,6 +12,7 @@
 #   numpy                  -> Stage 4  embed (float32 vector matrix, unit-norm assertions)
 #   streamlit              -> FR-30..34 tiny UI (welcome line, 3 examples, disclaimer)
 #   python-dotenv          -> loads .env (GROQ_API_KEY, HF_TOKEN) in config
+#   certifi                -> TLS trust store; keep at a patched release
 #   pytest                 -> offline test suite (no network, no live model)
 #
 # Chat generation uses the Groq API (GROQ_API_KEY in .env), not a local Ollama process.
@@ -19,6 +20,7 @@
 # Requires Python >= 3.10
 
 beautifulsoup4>=4.12,<5
+certifi>=2026.10.19
 chromadb>=0.5,<2
 httpx>=0.27,<1
 langchain-text-splitters>=0.2,<2

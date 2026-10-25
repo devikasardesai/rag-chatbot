@@ -13,7 +13,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from src import answer, config, guardrails  # noqa: E402  (path setup must run first)
+from src import answer, config, guardrails, limits, logger  # noqa: E402  (path setup must run first)
 
 PAGE_TITLE = "HDFC Mutual Fund FAQ Assistant"
 ANSWER_FOOTER = "Facts only. Not investment advice."
@@ -132,11 +132,38 @@ def render_answer(result: guardrails.AnswerResult) -> None:
 
 def ask(question: str) -> None:
     """Run one turn and keep it for this session only (FR-34: nothing is persisted)."""
-    if not question.strip():
+    text = str(question or "").strip()
+    validation_message = limits.validate_question(text, config.MAX_QUESTION_CHARS)
+    if validation_message:
+        st.session_state["notice"] = validation_message
         return
-    with st.spinner("Looking this up in the indexed sources..."):
-        result = answer.answer_question(question)
-    st.session_state["question"] = question
+
+    asked = int(st.session_state.get("questions_asked", 0))
+    if asked >= config.MAX_QUESTIONS_PER_SESSION:
+        st.session_state["notice"] = (
+            f"This session has reached its {config.MAX_QUESTIONS_PER_SESSION}-question "
+            "limit. Reload the page to start a new session."
+        )
+        return
+
+    limiter = limits.get_global_limiter()
+    decision = limiter.try_acquire()
+    if not decision.allowed:
+        st.session_state["notice"] = decision.message
+        return
+
+    try:
+        st.session_state["questions_asked"] = asked + 1
+        with st.spinner("Looking this up in the indexed sources..."):
+            result = answer.answer_question(text)
+    except Exception:
+        logger.configure_logging().exception("answer pipeline failed")
+        st.session_state["notice"] = "Something went wrong. Please try again."
+        return
+    finally:
+        limiter.release()
+
+    st.session_state["question"] = text
     st.session_state["result"] = result
 
 
@@ -204,6 +231,9 @@ def main() -> None:
             placeholder="e.g. What is the expense ratio of HDFC Equity Fund?",
         )
         st.form_submit_button("Ask", type="primary", on_click=submit_question)
+
+    if st.session_state.get("notice"):
+        st.warning(st.session_state.pop("notice"))
 
     if "result" in st.session_state:
         st.divider()

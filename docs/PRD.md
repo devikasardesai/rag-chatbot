@@ -39,7 +39,8 @@ advice, compute returns, or compare performance**.
 
 - No NAV / live price data, no return calculations, no fund comparison or rankings.
 - No portfolio advice, no buy/sell/hold guidance, no goal-based recommendations.
-- No user accounts, login, chat history persistence beyond session, or PII of any kind.
+- No user accounts, login, or chat-history persistence beyond the session. PII-looking input
+  is refused, and logs contain only SHA-256 fingerprints and metadata, not raw text.
 - No multi-AMC corpus (single AMC only), no live web crawling at query time.
 - No Hindi/regional language support, no voice input.
 
@@ -201,7 +202,7 @@ non-determinism for little gain on tabular fee data.
 | FR-26 | Intent router classifies queries as `FACT`, `HOW_TO`, or `ADVICE` | ≥ 90% correct on the 10-query test set |
 | FR-27 | `ADVICE` (buy/sell/hold, "which is better", portfolio allocation, "should I invest in X?") → polite refusal + facts-only message + 1 educational link (AMC/SEBI investor-education page) | No advice words in refusal path |
 | FR-28 | Output validator blocks: return/performance claims, comparative ranking, PII solicitation | Adversarial suite of ≥ 10 queries all blocked or redirected |
-| FR-29 | Never request or store PAN, Aadhaar, account number, OTP, email, or phone | Input filter drops PII-looking input and returns a safe message; logs store no PII |
+| FR-29 | Never request or store PAN, Aadhaar, account number, OTP, email, or phone | Input filter drops PII-looking input and returns a safe message; logs store only SHA-256 fingerprints and metadata, never raw question/answer text |
 
 ### 6.7 UI
 
@@ -238,7 +239,7 @@ non-determinism for little gain on tabular fee data.
 | NFR-02 | First response ≤ 10 s (embed + retrieve + Groq). Streaming/token output permitted to keep perceived latency low |
 | NFR-03 | Deterministic: `temperature = 0`, fixed chunk size, seeded where applicable |
 | NFR-04 | Re-ingest is idempotent and completes in < 3 min for 5 pages |
-| NFR-05 | No PII persisted anywhere; no analytics/telemetry leaving the machine |
+| NFR-05 | No raw question/answer text or PII persisted in logs; Streamlit usage stats and ChromaDB telemetry disabled; Groq receives question/context only for generation |
 | NFR-06 | Corpus is fully reproducible offline after ingest (cached HTML + local Chroma + local MiniLM embeddings); answering reuses it and needs no re-fetch |
 | NFR-07 | Code is modular and readable: separate ingest / retrieve / answer / guardrails modules, typed, no secrets in repo |
 | NFR-08 | Total demo footprint fits on a standard 16 GB RAM machine |
@@ -263,8 +264,9 @@ non-determinism for little gain on tabular fee data.
 
 1. **Public sources only.** No screenshots of any app back-end in deliverables. No third-party
    blogs as sources.
-2. **No PII.** The system must not ask for, accept, or store PAN, Aadhaar, account numbers,
-   OTPs, emails, or phone numbers. Detect and refuse.
+2. **No PII.** The system must not ask for or accept PAN, Aadhaar, account numbers, OTPs,
+   emails, or phone numbers. Detect and refuse. Logs must not contain raw question/answer
+   text; store only SHA-256 fingerprints and metadata.
 3. **No performance claims.** Never compute, compare, rank, or state returns/CAGR. If asked,
    reply that performance data is in the official factsheet and link it.
 4. **Clarity & transparency.** Answers ≤ 3 sentences, one citation, plus
@@ -281,7 +283,7 @@ non-determinism for little gain on tabular fee data.
 - [ ] Chunking decision documented with rationale and parameters in README.
 - [ ] ≥ 8/10 sample queries answered correctly with one valid citation each.
 - [ ] All 3 ADVICE/performance queries refused with a polite message + educational link.
-- [ ] PII query refused safely; no PII in logs.
+- [ ] PII query refused safely; logs contain no raw question/answer text or PII, only SHA-256 fingerprints and metadata.
 - [ ] `Last updated from sources:` present on every factual answer.
 - [ ] No answer exceeds 3 sentences.
 - [ ] UI shows welcome line, 3 example questions, and the facts-only disclaimer.

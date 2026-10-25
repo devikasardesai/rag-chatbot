@@ -391,7 +391,9 @@ class TestLogging:
         record = lines[0]
         for key in (
             "ts",
-            "question",
+            "question_sha256",
+            "question_chars",
+            "normalized_question_sha256",
             "k",
             "min_score",
             "hits",
@@ -401,9 +403,11 @@ class TestLogging:
             "retrieval_ms",
         ):
             assert key in record
+        assert "question" not in record
+        assert "normalized_question" not in record
         assert record["hits"][0]["chunk_id"].endswith(":000")
 
-    def test_logged_question_is_redacted(self, tmp_data_dir, monkeypatch):
+    def test_logged_question_is_hashed(self, tmp_data_dir, monkeypatch):
         _stub_query(monkeypatch)
         vectorstore.upsert_chunks([_chunk(0)], np.vstack([_fake_vector(0)]))
         result = retrieve.retrieve(
@@ -411,5 +415,8 @@ class TestLogging:
         )
         retrieve.log_result(result)
         line = (config.LOG_DIR / "retrieval.jsonl").read_text()
+        record = json.loads(line)
         assert "ABCDE1234F" not in line
-        assert "[redacted:pan:" in line
+        assert "question" not in record
+        assert "question_sha256" in record
+        assert record["question_chars"] == len("my PAN is ABCDE1234F what is the exit load")

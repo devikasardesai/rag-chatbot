@@ -50,8 +50,10 @@ data flow — data ingestion stages (1–5) and data retrieval stages (6–13).
                                           └────────────────────┘
 ```
 
-**Trust boundaries:** ingest fetches only allowlisted hosts. At query time embeddings
-stay local; generation POSTs the retrieved context to Groq. Logs redact PII.
+**Trust boundaries:** ingest starts from the five allowlisted pages and validates every
+redirect (HTTPS only, no credentials or non-443 ports, no local/private IP literals). At query
+time embeddings stay local; generation POSTs the retrieved context to Groq. Logs store SHA-256
+fingerprints and metadata, not raw question/answer text.
 
 ---
 
@@ -106,8 +108,9 @@ guardrails.py   retrieve.py       vectorstore.py      embed.py
 | `src/retrieve.py` | 6–9 | Query normalization, intent routing, similarity search + threshold, allowlist enforcement, MMR dedupe, context assembly | config, embed, vectorstore |
 | `src/guardrails.py` | 12 | PII patterns, advice patterns, refusal builder, answer validators (citation/length/claims), sentence trimmer | config |
 | `src/answer.py` | 10–11, 13 | Prompt construction, LLM call, citation extraction, last-updated injection, extractive fallback, orchestration | all above |
-| `src/logger.py` | — | JSONL retrieval/answer log | — |
-| `app.py` | — | UI: scope line, 3 examples, disclaimer, answer + link rendering | answer |
+| `src/logger.py` | — | JSONL retrieval/answer log with raw-text fingerprinting and PII redaction | — |
+| `src/limits.py` | — | Server-side input validation, per-process rate/concurrency limits, per-session cap | config |
+| `app.py` | — | UI: scope line, 3 examples, disclaimer, answer + link rendering, request limits | answer, limits, logger |
 
 ---
 
@@ -492,7 +495,7 @@ Env overrides: `HF_HOME`, `GROQ_API_KEY`, `GROQ_MODEL`, `GROQ_BASE_URL`, `RAG_DA
 threshold tuning:
 
 ```json
-{"ts":"2026-09-27T14:05:02Z","question":"Exit load of HDFC Large Cap?",
+{"ts":"2026-09-27T14:05:02Z","question_sha256":"4f2c…","question_chars":28,
  "intent":"fact","pii":false,"k":5,"min_score":0.35,
  "hits":[{"chunk_id":"a1b2…:007","scheme":"HDFC Large Cap Fund","section":"Exit load","score":0.71}],
  "dropped_low_score":2,"dropped_out_of_scope":0,"context_tokens":1180,
@@ -500,8 +503,8 @@ threshold tuning:
  "guardrail_flags":[],"source_url":"https://groww.in/…","refused":false}
 ```
 
-**`logs/answers.jsonl`** — question, final answer, citation, flags (append-only; no PII ever
-written, per FR-29).
+**`logs/answers.jsonl`** — question/answer SHA-256 fingerprints and character counts, citation,
+and flags (append-only; raw question/answer text is never written, per FR-29).
 
 **Health/self-check (`python -m src.answer --selftest`)**: collection exists, chunk count >
 100, embedding dim = 384, model reachable, one canned query returns a cited answer. Run before

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import ipaddress
 import json
 import re
 import statistics
@@ -11,6 +12,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urljoin, urlsplit
 
 import httpx
 import trafilatura
@@ -123,26 +125,79 @@ def _iso_date_now() -> str:
     return datetime.now(tz=timezone.utc).date().isoformat()
 
 
+_REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
+_BLOCKED_HOST_SUFFIXES = (".localhost", ".local", ".internal", ".home.arpa")
+_NUMERIC_HOST = re.compile(r"^(?:0x[0-9a-f]+|[0-9]+)(?:\.[0-9]+)*$", re.I)
+
+
+def _validate_fetch_url(url: str) -> None:
+    """Reject fetch/redirect targets that could reach the local network or a metadata API.
+
+    Checks the URL's literal host only; it does not resolve DNS.
+    """
+    try:
+        parts = urlsplit(url)
+        port = parts.port
+    except ValueError as error:
+        raise IngestError(f"invalid URL {url!r}") from error
+    if parts.scheme.lower() != "https":
+        raise IngestError(f"refusing non-HTTPS URL: {url}")
+    if parts.username or parts.password:
+        raise IngestError(f"refusing URL with embedded credentials: {url}")
+    if port not in (None, 443):
+        raise IngestError(f"refusing non-443 HTTPS URL: {url}")
+    host = (parts.hostname or "").strip().lower().rstrip(".")
+    if not host:
+        raise IngestError(f"refusing URL without a host: {url}")
+    if host == "localhost" or host.endswith(_BLOCKED_HOST_SUFFIXES):
+        raise IngestError(f"refusing local host: {url}")
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        if _NUMERIC_HOST.fullmatch(host):
+            raise IngestError(f"refusing ambiguous numeric host: {url}")
+        return
+    if not address.is_global:
+        raise IngestError(f"refusing non-public IP address: {url}")
+
+
+def _fetch_with_redirects(url: str) -> httpx.Response:
+    current = url
+    for redirects in range(config.HTTP_MAX_REDIRECTS + 1):
+        _validate_fetch_url(current)
+        response = httpx.get(
+            current,
+            headers={"User-Agent": config.USER_AGENT},
+            follow_redirects=False,
+            timeout=config.HTTP_TIMEOUT_S,
+        )
+        if response.status_code in _REDIRECT_STATUSES:
+            location = response.headers.get("location")
+            if not location:
+                raise IngestError(
+                    f"{current} returned HTTP {response.status_code} without Location"
+                )
+            if redirects >= config.HTTP_MAX_REDIRECTS:
+                raise IngestError(f"too many redirects fetching {url}")
+            current = urljoin(current, location)
+            continue
+        if response.status_code != 200:
+            raise IngestError(f"{current} returned HTTP {response.status_code}")
+        return response
+    raise IngestError(f"too many redirects fetching {url}")
+
+
 def _http_get(url: str) -> httpx.Response:
     attempts = config.HTTP_RETRIES + 1
     last_error: Exception | None = None
     for attempt in range(1, attempts + 1):
         _sleep(config.POLITENESS_DELAY_S)
         try:
-            response = httpx.get(
-                url,
-                headers={"User-Agent": config.USER_AGENT},
-                follow_redirects=True,
-                timeout=config.HTTP_TIMEOUT_S,
-            )
+            return _fetch_with_redirects(url)
         except httpx.HTTPError as error:
             last_error = error
             if attempt < attempts:
                 _sleep(RETRY_BACKOFF_S * attempt)
-            continue
-        if response.status_code != 200:
-            raise IngestError(f"{url} returned HTTP {response.status_code}")
-        return response
     raise IngestError(f"failed to fetch {url} after {attempts} attempts: {last_error}")
 
 

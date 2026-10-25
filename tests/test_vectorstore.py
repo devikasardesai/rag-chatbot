@@ -295,6 +295,11 @@ class TestStats:
 
 
 class TestFreshProcessReopen:
+    def test_client_disables_anonymized_telemetry(self, tmp_data_dir):
+        vectorstore._client_for.cache_clear()
+        client = vectorstore.get_client()
+        assert client.get_settings().anonymized_telemetry is False
+
     def test_stored_vectors_survive_a_new_client(self, tmp_data_dir):
         chunks = [_fake_chunk(ordinal=index) for index in range(3)]
         vectors = np.vstack([_fake_vector(index) for index in range(3)])

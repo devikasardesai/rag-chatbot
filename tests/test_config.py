@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from dataclasses import FrozenInstanceError
 import importlib
+import json
+import logging
 import warnings
 
 import pytest
@@ -190,6 +192,21 @@ class TestLoggerRedaction:
         assert "redacted:pan:" in redacted
         assert "please fetch my folio" in redacted
 
+    def test_redact_pii_removes_groq_api_key_shapes(self):
+        key = "gsk_" + "a" * 40
+        redacted = logger.redact_pii(f"Authorization: Bearer {key}")
+        assert key not in redacted
+        assert "redacted:api_key:" in redacted
+
+    def test_pipeline_formatter_redacts_api_key_shapes(self):
+        key = "gsk_" + "b" * 40
+        record = logging.LogRecord(
+            "rag", logging.ERROR, __file__, 1, "request failed: %s", (key,), None
+        )
+        formatted = logger._RedactingFormatter("%(message)s").format(record)
+        assert key not in formatted
+        assert "redacted:api_key:" in formatted
+
     def test_redact_pii_removes_aadhaar_email_and_phone(self):
         text = (
             "aadhaar 4567 8901 2345, mail devika@example.com, "
@@ -239,6 +256,33 @@ class TestLoggerRedaction:
         answers = (config.LOG_DIR / "answers.jsonl").read_text(encoding="utf-8")
         retrieval = (config.LOG_DIR / "retrieval.jsonl").read_text(encoding="utf-8")
         assert "ABCDE1234F" not in answers
-        assert "redacted:pan:" in answers
         assert "HDFC Small Cap Fund" in retrieval
         assert len(answers.strip().splitlines()) == 1
+
+        record = json.loads(answers)
+        assert "question" not in record
+        assert "answer" not in record
+        assert len(record["question_sha256"]) == 16
+        assert record["question_chars"] == 14
+        assert len(record["answer_sha256"]) == 16
+        assert record["answer_chars"] == 2
+
+    def test_sensitive_text_fields_are_hashed_at_any_depth(self, tmp_data_dir):
+        logger.log_retrieval(
+            {
+                "question": "raw question",
+                "normalized_question": "raw normalized",
+                "nested": {"answer": "raw answer", "raw_question": "raw other"},
+                "scheme": "HDFC Small Cap Fund",
+            }
+        )
+        record = json.loads((config.LOG_DIR / "retrieval.jsonl").read_text())
+        assert "raw question" not in json.dumps(record)
+        assert "raw normalized" not in json.dumps(record)
+        assert "raw answer" not in json.dumps(record)
+        assert "raw other" not in json.dumps(record)
+        assert "question_sha256" in record
+        assert "normalized_question_sha256" in record
+        assert "answer_sha256" in record["nested"]
+        assert "raw_question_sha256" in record["nested"]
+        assert record["scheme"] == "HDFC Small Cap Fund"
